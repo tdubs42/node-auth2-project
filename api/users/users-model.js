@@ -1,9 +1,10 @@
 const db = require('../../data/db-config.js')
 
-function find() {
-  return db('users as u')
+async function find() {
+  await db('users as u')
     .leftJoin('roles as r', 'r.role_id', 'u.role_id')
     .select('u.user_id', 'u.username', 'r.role_name')
+    .then(users => users)
 }
 
 function findBy(filter) {
@@ -11,6 +12,7 @@ function findBy(filter) {
     .leftJoin('roles as r', 'r.role_id', 'u.role_id')
     .select('u.user_id', 'u.username', 'u.password', 'r.role_name')
     .where(filter)
+    .then(filtered => filtered)
 }
 
 function findById(user_id) {
@@ -18,6 +20,7 @@ function findById(user_id) {
     .leftJoin('roles as r', 'r.role_id', 'u.role_id')
     .select('u.user_id', 'u.username', 'r.role_name')
     .where('user_id', user_id)
+    .then(user => user[0])
 }
 
 /**

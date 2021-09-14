@@ -1,5 +1,4 @@
 module.exports = {
   PORT: process.env.PORT || 5000,
-  JWT_SECRET: process.env.JWT_SECRET || 'The new refrain stills the floppy strain',
-  KOSHER: process.env.KOSHER || 8
+  JWT_SECRET: process.env.JWT_SECRET || 'The new refrain stills the floppy strain'
 }
