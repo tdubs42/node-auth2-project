@@ -4,18 +4,19 @@ const tokenBuilder = require('./token-builder')
 const {
   checkUsernameExists,
   validateRoleName,
-  hashPassword
+  hashPassword,
+  verifyHash
 } = require('./auth-middleware')
 const User = require('../users/users-model')
 
 router.post('/register', validateRoleName, hashPassword, (req, res, next) => {
-  User.add(req.user)
+  User.add(req.cleanedPayload)
     .then(created => res.status(201).json(created))
     .catch(next)
 })
 
 
-router.post('/login', checkUsernameExists, (req, res, next) => {
+router.post('/login', verifyHash, checkUsernameExists, (req, res, next) => {
   const token = tokenBuilder(req.body)
 
   res.json({

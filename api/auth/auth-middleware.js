@@ -35,7 +35,71 @@ const checkUsernameExists = (req, res, next) => {
 
   User.findBy({username})
     .then(found => {
-      if (found.length > 0) return next()
+      if (found.length === 0) return next({
+        status: 401,
+        message: 'Invalid credentials'
+      })
+      next()
+    })
+    .catch(next)
+}
+
+
+const validateRoleName = (req, res, next) => {
+  const {role_name} = req.body
+
+  if (!role_name || typeof role_name === 'undefined' || role_name === '') {
+    req.role_name = 'student'
+    next()
+  } else {
+    if (role_name.trim() === /admin/i) return next({
+      status: 422,
+      message: 'Role name can not be admin'
+    })
+    if (role_name.trim().length > 32) return next({
+      status: 422,
+      message: 'Role name can not be longer than 32 chars'
+    })
+    if (role_name.trim() && role_name === 'instructor') {
+      req.role_name = role_name.trim()
+      req.role_id = 2
+      return next()
+    }
+    User.findBy({role_name})
+      .then(found => {
+        if (!found || typeof found === 'undefined') {
+          req.role_name = role_name.trim()
+          return next()
+        }
+        if (found) {
+          req.role_name = role_name.trim()
+          req.role_id = found.role_id
+          return next()
+        }
+      })
+      .catch(next)
+  }
+}
+
+const hashPassword = (req, res, next) => {
+  req.cleanedPayload = {
+    username: req.body.username,
+    password: bcrypt.hashSync(req.body.password),
+    role_name: req.role_name,
+    role_id: req.role_id
+  }
+  next()
+}
+
+const verifyHash = (req, res, next) => {
+  const {
+    username,
+    password
+  } = req.body
+  User.findBy({username})
+    .then(([user]) => {
+      if (user && bcrypt.compareSync(password, user.password)) return req.verified =
+        req.body && next()
       next({
         status: 401,
         message: 'Invalid credentials'
@@ -44,45 +108,11 @@ const checkUsernameExists = (req, res, next) => {
     .catch(next)
 }
 
-
-const validateRoleName = (req, res, next) => {
-  const {role_name} = req.user
-
-  if (role_name.trim().length
-    === 0
-    || !role_name
-    || typeof role_name
-    === 'undefined') return {
-    ...req.user,
-    role_name: 'student'
-  } && next()
-
-  if (role_name.trim() === /admin/i) return next({
-    status: 422,
-    message: 'Role name can not be admin'
-  })
-  if (role_name.trim().length > 32) return next({
-    status: 422,
-    message: 'Role name can not be longer than 32 chars'
-  })
-
-  req.role_name = role_name.trim()
-  next()
-}
-
-const hashPassword = (req, res, next) => {
-  req.user = {
-    username: req.user.username,
-    password: bcrypt.hashSync(req.body.password),
-    role_name: req.role_name
-  }
-  next()
-}
-
 module.exports = {
   restricted,
   checkUsernameExists,
   validateRoleName,
   only,
-  hashPassword
+  hashPassword,
+  verifyHash
 }

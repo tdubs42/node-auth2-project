@@ -20,7 +20,8 @@ function findById(user_id) {
     .leftJoin('roles as r', 'r.role_id', 'u.role_id')
     .select('u.user_id', 'u.username', 'r.role_name')
     .where('user_id', user_id)
-    .then(user => user[0])
+    .first()
+    .then(user => user)
 }
 
 /**
