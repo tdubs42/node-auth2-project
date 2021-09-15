@@ -1,10 +1,9 @@
 const db = require('../../data/db-config.js')
 
-async function find() {
-  await db('users as u')
+function find() {
+  return db('users as u')
     .leftJoin('roles as r', 'r.role_id', 'u.role_id')
     .select('u.user_id', 'u.username', 'r.role_name')
-    .then(users => users)
 }
 
 function findBy(filter) {

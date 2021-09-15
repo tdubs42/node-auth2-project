@@ -17,10 +17,10 @@ router.post('/register', validateRoleName, hashPassword, (req, res, next) => {
 
 
 router.post('/login', verifyHash, checkUsernameExists, (req, res, next) => {
-  const token = tokenBuilder(req.body)
+  const token = tokenBuilder(req.found)
 
   res.json({
-    message: `${req.body.username} is back!`,
+    message: `${req.found.username} is back!`,
     token
   })
 })

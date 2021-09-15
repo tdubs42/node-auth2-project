@@ -11,22 +11,22 @@ const restricted = (req, res, next) => {
     message: 'Token required'
   })
 
-  jwt.verify(token, JWT_SECRET, (sad, happy) => {
-    if (sad) return next({
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return next({
       status: 401,
       message: 'Token invalid'
     })
-    req.token = happy
-    next()
+    req.decodedJwt = decoded
+    return next()
   })
 }
 
 const only = role_name => (req, res, next) => {
-  if (role_name === 'admin') return next()
   if (role_name !== 'admin') return next({
     status: 403,
     message: 'This is not for you'
   })
+  next()
 }
 
 
@@ -39,6 +39,7 @@ const checkUsernameExists = (req, res, next) => {
         status: 401,
         message: 'Invalid credentials'
       })
+      req.found = found[0]
       next()
     })
     .catch(next)
@@ -98,9 +99,8 @@ const verifyHash = (req, res, next) => {
   } = req.body
   User.findBy({username})
     .then(([user]) => {
-      if (user && bcrypt.compareSync(password, user.password)) return req.verified =
-        req.body && next()
-      next({
+      if (user && bcrypt.compareSync(password, user.password)) return next()
+      return next({
         status: 401,
         message: 'Invalid credentials'
       })
